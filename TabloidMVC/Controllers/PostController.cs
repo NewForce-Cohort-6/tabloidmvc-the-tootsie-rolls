@@ -2,9 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualBasic;
+using System.Collections.Generic;
+using System;
 using System.Security.Claims;
 using TabloidMVC.Models.ViewModels;
 using TabloidMVC.Repositories;
+using Microsoft.AspNetCore.Http;
+using TabloidMVC.Models;
 
 namespace TabloidMVC.Controllers
 {
@@ -65,6 +69,33 @@ namespace TabloidMVC.Controllers
             {
                 vm.CategoryOptions = _categoryRepository.GetAll();
                 return View(vm);
+            }
+        }
+
+        // GET: DogsController/Edit/5
+        public ActionResult Edit(int id)
+        {
+            Post post = _postRepository.GetPublishedPostById(id);
+            if (post == null)
+            {
+                return RedirectToAction("Details", new { id = post.Id });
+            }
+            return View(post);
+        }
+
+        // POST: DogsController/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, Post post)
+        {
+            try
+            {
+                _postRepository.Edit(post);
+                return RedirectToAction("Details", new { id = post.Id });
+            }
+            catch (Exception ex)
+            {
+                return View(post);
             }
         }
 
