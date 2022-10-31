@@ -35,6 +35,8 @@ namespace TabloidMVC.Repositories
                 }
             }
         }
+
+        // Adding method to create a new category and add to database
         public void AddCategory(Category category)
         {
             using (SqlConnection conn = Connection)
