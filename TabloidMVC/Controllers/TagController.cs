@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TabloidMVC.Models;
 using System.Collections.Generic;
 using TabloidMVC.Repositories;
+using System;
 
 namespace TabloidMVC.Controllers
 {
@@ -38,15 +39,16 @@ namespace TabloidMVC.Controllers
         // POST: TagController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(Tag tag)
         {
             try
             {
+                _tagRepo.AddTag(tag);
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch(Exception ex)
             {
-                return View();
+                return View(tag);
             }
         }
 
