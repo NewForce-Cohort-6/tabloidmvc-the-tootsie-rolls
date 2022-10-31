@@ -21,8 +21,10 @@ namespace TabloidMVC.Repositories
                 using (var cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"
-                    SELECT Id, PostId, UserProfileId, Subject, Content, CreateDateTime
-                        FROM Comment
+                    SELECT c.Id, c.PostId, c.UserProfileId, c.Subject, c.Content, c.CreateDateTime, Post.Title, u.DisplayName
+                        FROM Comment c
+                        join Post on c.PostId = Post.Id
+                        join UserProfile u on c.UserProfileId = u.Id
                     WHERE PostId = @postId";
                     cmd.Parameters.AddWithValue("@postId", postId);
 
@@ -68,15 +70,21 @@ namespace TabloidMVC.Repositories
 
         private Comment NewCommentFromReader(SqlDataReader reader)
         {
-            return new Comment()
+            Comment comment = new Comment()
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                 PostId = reader.GetInt32(reader.GetOrdinal("PostId")),
                 UserProfileId = reader.GetInt32(reader.GetOrdinal("UserProfileId")),
-                Subject = DbUtils.GetNullableString(reader, "HeaderImage"),                
+                Subject = reader.GetString(reader.GetOrdinal("Subject")),
                 Content = reader.GetString(reader.GetOrdinal("Content")),
-                CreateDateTime = reader.GetDateTime(reader.GetOrdinal("CreateDateTime"))                
+                CreateDateTime = reader.GetDateTime(reader.GetOrdinal("CreateDateTime")),
+                Post = new Post(),
+                UserDisplayName = reader.GetString(reader.GetOrdinal("DisplayName"))
             };
+
+            comment.Post.Title = reader.GetString(reader.GetOrdinal("Title"));
+
+            return comment;
         }
     }
 }

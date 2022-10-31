@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualBasic;
+using System.Collections.Generic;
 using System.Security.Claims;
 using TabloidMVC.Models;
 using TabloidMVC.Repositories;
+using System.Linq;
 
 namespace TabloidMVC.Controllers
 {
@@ -22,7 +24,8 @@ namespace TabloidMVC.Controllers
 
         public IActionResult Index(int id)
         {
-            var comments = _commentRepository.GetPostsComments(id);
+            //get comments and sort by date - most recent first
+            List<Comment> comments = _commentRepository.GetPostsComments(id).OrderByDescending(x => x.CreateDateTime).ToList();
             return View(comments);
         }
 

@@ -1,8 +1,15 @@
-﻿SELECT Id, PostId, UserProfileId, Subject, Content, CreateDateTime
-FROM Comment
+﻿--update comment
+--set 
+--	CreateDateTime = '2022-08-01 00:00:00.000'
+--where id = 4;
+
+SELECT c.Id, c.PostId, c.UserProfileId, c.Subject, c.Content, c.CreateDateTime, Post.Title, u.DisplayName
+FROM Comment c
+join Post on c.PostId = Post.Id
+join UserProfile u on c.UserProfileId = u.Id
 WHERE PostId = 1;
 
---select * from post;
+select * from UserProfile;
 
 --SET IDENTITY_INSERT Comment ON
 --INSERT INTO Comment ([Id], PostId, UserProfileId, [Subject], Content, CreateDateTime)
