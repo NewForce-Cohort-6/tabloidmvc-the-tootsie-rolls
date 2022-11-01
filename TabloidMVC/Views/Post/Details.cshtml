@@ -37,9 +37,11 @@
             <p class="col-sm-12 mt-5">@Html.DisplayFor(model => model.Content)</p>
         </section>
         
-        @*make a viewmodel for posts with a post and a list of comments tomorrow morning*@
-        @*May add functionality later to not have this link appear if there are no comments to display*@
-        @*ActionLink(linkText, actionName, controllerName, routeValue)*@
-        @Html.ActionLink("View Comments", "Index", "Comment", new {  id=Model.Id  }) |
+        @if(Model.Comments.Count != 0)
+        {
+            @*ActionLink(linkText, actionName, controllerName, routeValue)*@
+            @Html.ActionLink("View Comments", "Index", "Comment", new {  id=Model.Id  });
+        }
+        
     </div>
 </div>

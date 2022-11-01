@@ -13,11 +13,13 @@ namespace TabloidMVC.Controllers
     {
         private readonly IPostRepository _postRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly ICommentRepository _commentRepository;
 
-        public PostController(IPostRepository postRepository, ICategoryRepository categoryRepository)
+        public PostController(IPostRepository postRepository, ICategoryRepository categoryRepository, ICommentRepository commentRepository)
         {
             _postRepository = postRepository;
             _categoryRepository = categoryRepository;
+            _commentRepository = commentRepository;
         }
 
         public IActionResult Index()
