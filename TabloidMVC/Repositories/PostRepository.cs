@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Data;
 using System.Reflection.PortableExecutable;
@@ -6,17 +7,13 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using TabloidMVC.Models;
 using TabloidMVC.Utils;
+using Microsoft.Extensions.Hosting;
 
 namespace TabloidMVC.Repositories
 {
     public class PostRepository : BaseRepository, IPostRepository
     {
-        //public ICommentRepository commentRepository = new CommentRepository(config);
-        //where does this config variable get set?
-        //where does the controller get instantiated?
-        public PostRepository(IConfiguration config) : base(config) {
-            //ICommentRepository commentRepository = new CommentRepository(config);
-        }
+        public PostRepository(IConfiguration config) : base(config) { }
 
         public List<Post> GetAllPublishedPosts()
         {
@@ -34,11 +31,13 @@ namespace TabloidMVC.Repositories
                               u.FirstName, u.LastName, u.DisplayName, 
                               u.Email, u.CreateDateTime, u.ImageLocation AS AvatarImage,
                               u.UserTypeId, 
-                              ut.[Name] AS UserTypeName
+                              ut.[Name] AS UserTypeName,
+                              co.Id as CommentId
                          FROM Post p
                               LEFT JOIN Category c ON p.CategoryId = c.id
                               LEFT JOIN UserProfile u ON p.UserProfileId = u.id
                               LEFT JOIN UserType ut ON u.UserTypeId = ut.id
+                              LEFT JOIN Comment co on p.Id = co.PostId
                         WHERE IsApproved = 1 AND PublishDateTime < SYSDATETIME()";
                     var reader = cmd.ExecuteReader();
 
@@ -46,7 +45,26 @@ namespace TabloidMVC.Repositories
 
                     while (reader.Read())
                     {
-                        posts.Add(NewPostFromReader(reader));
+                        //if the line we're reading is NOT a post that has already bee created/added to the list                        
+                        if(!posts.Any(x => x.Id == reader.GetInt32(reader.GetOrdinal("Id"))))
+                        {
+                            posts.Add(NewPostFromReader(reader));
+                        } 
+                        else //if the post IS already in the list
+                        {   //set a post variable to the one that has more comments left to add
+                            Post foundPost = posts.Find(x => x.Id == reader.GetInt32(reader.GetOrdinal("Id")));
+                            try //adding another comment
+                            { 
+                                Comment comment = new Comment();
+                                comment.Id = reader.GetInt32(reader.GetOrdinal("CommentId"));
+                                //if there are no comments, this will be null and will break
+                                foundPost.Comments.Add(comment);
+                            }
+                            catch (Exception x)
+                            {
+                                //if there are no comments, do nothing/do not read the commentId line or try to add to the list
+                            }
+                        }
                     }
 
                     reader.Close();
@@ -72,11 +90,13 @@ namespace TabloidMVC.Repositories
                               u.FirstName, u.LastName, u.DisplayName, 
                               u.Email, u.CreateDateTime, u.ImageLocation AS AvatarImage,
                               u.UserTypeId, 
-                              ut.[Name] AS UserTypeName
+                              ut.[Name] AS UserTypeName,
+                              co.Id as CommentId
                          FROM Post p
                               LEFT JOIN Category c ON p.CategoryId = c.id
                               LEFT JOIN UserProfile u ON p.UserProfileId = u.id
                               LEFT JOIN UserType ut ON u.UserTypeId = ut.id
+                              LEFT JOIN Comment co on p.Id = co.PostId
                         WHERE IsApproved = 1 AND PublishDateTime < SYSDATETIME()
                               AND p.id = @id";
 
@@ -85,9 +105,28 @@ namespace TabloidMVC.Repositories
 
                     Post post = null;
 
-                    if (reader.Read())
+                    while (reader.Read())
                     {
+                        ////if the line we're reading is NOT a post that has already bee created/added to the list                        
+                        //if (!posts.Any(x => x.Id == reader.GetInt32(reader.GetOrdinal("Id"))))
+                        //{
                         post = NewPostFromReader(reader);
+                        //}
+                        //else //if the post IS already in the list
+                        //{   //set a post variable to the one that has more comments left to add
+                            //Post foundPost = posts.Find(x => x.Id == reader.GetInt32(reader.GetOrdinal("Id")));
+                            try //adding another comment
+                            {
+                                Comment comment = new Comment();
+                                comment.Id = reader.GetInt32(reader.GetOrdinal("CommentId"));
+                                //if there are no comments, this will be null and will break
+                                post.Comments.Add(comment);
+                            }
+                            catch (Exception x)
+                            {
+                                //if there are no comments, do nothing/do not read the commentId line or try to add to the list
+                            }
+                        //}
                     }
 
                     reader.Close();
@@ -96,52 +135,6 @@ namespace TabloidMVC.Repositories
                 }
             }
         }
-
-        //public List<Post> GetPublishedPostsCommentsByPostId(int id)
-        //{
-        //    using (var conn = Connection)
-        //    {
-        //        conn.Open();
-        //        using (var cmd = conn.CreateCommand())
-        //        {
-        //            cmd.CommandText = @"
-        //               SELECT p.Id, p.Title, p.Content, 
-        //                      p.ImageLocation AS HeaderImage,
-        //                      p.CreateDateTime, p.PublishDateTime, p.IsApproved,
-        //                      p.CategoryId, p.UserProfileId,
-        //                      c.[Name] AS CategoryName,
-        //                      u.FirstName, u.LastName, u.DisplayName, 
-        //                      u.Email, u.CreateDateTime, u.ImageLocation AS AvatarImage,
-        //                      u.UserTypeId, 
-        //                      ut.[Name] AS UserTypeName,
-        //                      co.Id as CommentId,
-        //                      c.PostId as CommentPostId,
-        //                      c.Subject, c.Content, 
-        //                      c.CreateDateTime as CommentCreateDateTime
-        //                 FROM Post p
-        //                      LEFT JOIN Category c ON p.CategoryId = c.id
-        //                      LEFT JOIN UserProfile u ON p.UserProfileId = u.id
-        //                      LEFT JOIN UserType ut ON u.UserTypeId = ut.id
-        //                      LEFT JOIN Comment co on p.Id = co.PostId
-        //                WHERE IsApproved = 1 AND PublishDateTime < SYSDATETIME()
-        //                      AND p.id = @id";
-
-        //            cmd.Parameters.AddWithValue("@id", id);
-        //            var reader = cmd.ExecuteReader();
-
-        //            var posts = new List<Post>();
-
-        //            while (reader.Read())
-        //            {
-        //                posts.Add(NewPostFromReader(reader));
-        //            }
-
-        //            reader.Close();
-
-        //            return posts;
-        //        }
-        //    }
-        //}
 
         public Post GetUserPostById(int id, int userProfileId)
         {
@@ -215,7 +208,7 @@ namespace TabloidMVC.Repositories
         }
 
         private Post NewPostFromReader(SqlDataReader reader)
-        {
+        {            
             Post post = new Post()
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
@@ -249,9 +242,18 @@ namespace TabloidMVC.Repositories
                 },
                 Comments = new List<Comment>()              
             };
-
-            //post.Comments = commentRepository.GetPostsComments(reader.GetInt32(reader.GetOrdinal("Id")))
-            //becuase this is a list, i think i need a view model if i can't instansiate a comment repository in this repository
+            try
+            {
+                Comment comment = new Comment();
+                comment.Id = reader.GetInt32(reader.GetOrdinal("CommentId"));
+                //if there are no comments, this will be null and will break
+                post.Comments.Add(comment);
+            }
+            catch (Exception x)
+            {
+                //if there are no comments, do nothing/do not read the commentId line or try to add to the list
+            }
+            
 
             return post;
         }
