@@ -12,8 +12,6 @@ namespace TabloidMVC.Repositories
     public class PostRepository : BaseRepository, IPostRepository
     {
         public PostRepository(IConfiguration config) : base(config) { }
-
-        private readonly ICommentRepository _commentRepository;
         public List<Post> GetAllPublishedPosts()
         {
             using (var conn = Connection)
@@ -93,51 +91,51 @@ namespace TabloidMVC.Repositories
             }
         }
 
-        public List<Post> GetPublishedPostsCommentsByPostId(int id)
-        {
-            using (var conn = Connection)
-            {
-                conn.Open();
-                using (var cmd = conn.CreateCommand())
-                {
-                    cmd.CommandText = @"
-                       SELECT p.Id, p.Title, p.Content, 
-                              p.ImageLocation AS HeaderImage,
-                              p.CreateDateTime, p.PublishDateTime, p.IsApproved,
-                              p.CategoryId, p.UserProfileId,
-                              c.[Name] AS CategoryName,
-                              u.FirstName, u.LastName, u.DisplayName, 
-                              u.Email, u.CreateDateTime, u.ImageLocation AS AvatarImage,
-                              u.UserTypeId, 
-                              ut.[Name] AS UserTypeName,
-                              co.Id as CommentId,
-                              c.PostId as CommentPostId,
-                              c.Subject, c.Content, 
-                              c.CreateDateTime as CommentCreateDateTime
-                         FROM Post p
-                              LEFT JOIN Category c ON p.CategoryId = c.id
-                              LEFT JOIN UserProfile u ON p.UserProfileId = u.id
-                              LEFT JOIN UserType ut ON u.UserTypeId = ut.id
-                              LEFT JOIN Comment co on p.Id = co.PostId
-                        WHERE IsApproved = 1 AND PublishDateTime < SYSDATETIME()
-                              AND p.id = @id";
+        //public List<Post> GetPublishedPostsCommentsByPostId(int id)
+        //{
+        //    using (var conn = Connection)
+        //    {
+        //        conn.Open();
+        //        using (var cmd = conn.CreateCommand())
+        //        {
+        //            cmd.CommandText = @"
+        //               SELECT p.Id, p.Title, p.Content, 
+        //                      p.ImageLocation AS HeaderImage,
+        //                      p.CreateDateTime, p.PublishDateTime, p.IsApproved,
+        //                      p.CategoryId, p.UserProfileId,
+        //                      c.[Name] AS CategoryName,
+        //                      u.FirstName, u.LastName, u.DisplayName, 
+        //                      u.Email, u.CreateDateTime, u.ImageLocation AS AvatarImage,
+        //                      u.UserTypeId, 
+        //                      ut.[Name] AS UserTypeName,
+        //                      co.Id as CommentId,
+        //                      c.PostId as CommentPostId,
+        //                      c.Subject, c.Content, 
+        //                      c.CreateDateTime as CommentCreateDateTime
+        //                 FROM Post p
+        //                      LEFT JOIN Category c ON p.CategoryId = c.id
+        //                      LEFT JOIN UserProfile u ON p.UserProfileId = u.id
+        //                      LEFT JOIN UserType ut ON u.UserTypeId = ut.id
+        //                      LEFT JOIN Comment co on p.Id = co.PostId
+        //                WHERE IsApproved = 1 AND PublishDateTime < SYSDATETIME()
+        //                      AND p.id = @id";
 
-                    cmd.Parameters.AddWithValue("@id", id);
-                    var reader = cmd.ExecuteReader();
+        //            cmd.Parameters.AddWithValue("@id", id);
+        //            var reader = cmd.ExecuteReader();
 
-                    var posts = new List<Post>();
+        //            var posts = new List<Post>();
 
-                    while (reader.Read())
-                    {
-                        posts.Add(NewPostFromReader(reader));
-                    }
+        //            while (reader.Read())
+        //            {
+        //                posts.Add(NewPostFromReader(reader));
+        //            }
 
-                    reader.Close();
+        //            reader.Close();
 
-                    return posts;
-                }
-            }
-        }
+        //            return posts;
+        //        }
+        //    }
+        //}
 
         public Post GetUserPostById(int id, int userProfileId)
         {
@@ -244,22 +242,10 @@ namespace TabloidMVC.Repositories
                     }
                 },
                 Comments = new List<Comment>()
-            };
-            Comment comment = new Comment()
-            {
-                Id = reader.GetInt32(reader.GetOrdinal("CommentId")),
-                PostId = reader.GetInt32(reader.GetOrdinal("CommentPostId")),
-                UserProfileId = reader.GetInt32(reader.GetOrdinal("UserProfileId")),
-                Subject = reader.GetString(reader.GetOrdinal("Subject")),
-                Content = reader.GetString(reader.GetOrdinal("Content")),
-                CreateDateTime = reader.GetDateTime(reader.GetOrdinal("CommentCreateDateTime")),
-                Post = new Post(),
-                UserDisplayName = reader.GetString(reader.GetOrdinal("DisplayName"))
-            };
+                //Comments = commentRepository.GetPostsComments(reader.GetInt32(reader.GetOrdinal("Id")))
+                //becuase this is a list, i think i need a view model if i can't instansiate a comment repository in this repository
 
-            comment.Post.Title = reader.GetString(reader.GetOrdinal("Title"));
-
-            post.Comments.Add(comment);
+            };
             return post;
         }
     }
