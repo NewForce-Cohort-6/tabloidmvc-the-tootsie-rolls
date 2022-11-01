@@ -5,6 +5,7 @@
 @{
     ViewData["Title"] = "Index";
 }
+
 @*Get the name of the post from the first comment's post.title attribute*@
 <h1>@Model.First().Post.Title</h1>
 
@@ -72,8 +73,5 @@
     </tbody>
 </table>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-@*ActionLink(linkText, actionName, controllerName, routeValue*@
+@*ActionLink(linkText, actionName, controllerName, routeValue)*@
 @Html.ActionLink("Back to Post", "Details", "Post", new {  id=Model.First().PostId  }) |
