@@ -11,7 +11,13 @@ namespace TabloidMVC.Repositories
 {
     public class PostRepository : BaseRepository, IPostRepository
     {
-        public PostRepository(IConfiguration config) : base(config) { }
+        //public ICommentRepository commentRepository = new CommentRepository(config);
+        //where does this config variable get set?
+        //where does the controller get instantiated?
+        public PostRepository(IConfiguration config) : base(config) {
+            //ICommentRepository commentRepository = new CommentRepository(config);
+        }
+
         public List<Post> GetAllPublishedPosts()
         {
             using (var conn = Connection)
@@ -241,11 +247,12 @@ namespace TabloidMVC.Repositories
                         Name = reader.GetString(reader.GetOrdinal("UserTypeName"))
                     }
                 },
-                Comments = new List<Comment>()
-                //Comments = commentRepository.GetPostsComments(reader.GetInt32(reader.GetOrdinal("Id")))
-                //becuase this is a list, i think i need a view model if i can't instansiate a comment repository in this repository
-
+                Comments = new List<Comment>()              
             };
+
+            //post.Comments = commentRepository.GetPostsComments(reader.GetInt32(reader.GetOrdinal("Id")))
+            //becuase this is a list, i think i need a view model if i can't instansiate a comment repository in this repository
+
             return post;
         }
     }
