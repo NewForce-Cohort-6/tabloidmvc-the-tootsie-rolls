@@ -75,12 +75,14 @@ namespace TabloidMVC.Controllers
         // GET: DogsController/Edit/5
         public ActionResult Edit(int id)
         {
-            Post post = _postRepository.GetPublishedPostById(id);
-            if (post == null)
+            var vm = new PostEditViewModel();
+            vm.Post = _postRepository.GetPublishedPostById(id);
+            vm.CategoryOptions = _categoryRepository.GetAll();
+            if (vm.Post == null)
             {
-                return RedirectToAction("Details", new { id = post.Id });
+                return RedirectToAction("Details", new { id =vm.Post.Id });
             }
-            return View(post);
+            return View(vm);
         }
 
         // POST: DogsController/Edit/5
