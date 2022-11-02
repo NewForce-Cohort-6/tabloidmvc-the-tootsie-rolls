@@ -57,6 +57,8 @@ namespace TabloidMVC.Repositories
             }
         }
 
+
+
         public Category GetCategoryById(int id)
         {
             using (SqlConnection conn = Connection)
