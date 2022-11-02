@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Data;
 using System.Reflection.PortableExecutable;
@@ -7,12 +8,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using TabloidMVC.Models;
 using TabloidMVC.Utils;
+using Microsoft.Extensions.Hosting;
 
 namespace TabloidMVC.Repositories
 {
     public class PostRepository : BaseRepository, IPostRepository
     {
         public PostRepository(IConfiguration config) : base(config) { }
+
         public List<Post> GetAllPublishedPosts()
         {
             using (var conn = Connection)
@@ -67,11 +70,13 @@ namespace TabloidMVC.Repositories
                               u.FirstName, u.LastName, u.DisplayName, 
                               u.Email, u.CreateDateTime, u.ImageLocation AS AvatarImage,
                               u.UserTypeId, 
-                              ut.[Name] AS UserTypeName
+                              ut.[Name] AS UserTypeName,
+                              co.Id as CommentId
                          FROM Post p
                               LEFT JOIN Category c ON p.CategoryId = c.id
                               LEFT JOIN UserProfile u ON p.UserProfileId = u.id
                               LEFT JOIN UserType ut ON u.UserTypeId = ut.id
+                              LEFT JOIN Comment co on p.Id = co.PostId
                         WHERE IsApproved = 1 AND PublishDateTime < SYSDATETIME()
                               AND p.id = @id";
 
@@ -80,9 +85,27 @@ namespace TabloidMVC.Repositories
 
                     Post post = null;
 
+                    //the post is going to be the same post each time through the loop (below)
                     if (reader.Read())
                     {
                         post = NewPostFromReader(reader);
+                        //the first comment will be added in the NewPostFromReader method
+                    }
+
+                    //there can be multiple lines now bc of multiple comments
+                    while (reader.Read())
+                    {
+                        try //adding another comment
+                        {
+                            Comment comment = new Comment();
+                            comment.Id = reader.GetInt32(reader.GetOrdinal("CommentId"));
+                            //if there are no comments, this will be null and will break
+                            post.Comments.Add(comment);
+                        }
+                        catch (Exception x)
+                        {
+                            //if there are no comments, do nothing/do not read the commentId line or try to add to the list
+                        }
                     }
 
                     reader.Close();
@@ -199,8 +222,8 @@ namespace TabloidMVC.Repositories
         }
 
         private Post NewPostFromReader(SqlDataReader reader)
-        {
-            return new Post()
+        {            
+            Post post = new Post()
             {
                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                 Title = reader.GetString(reader.GetOrdinal("Title")),
@@ -231,8 +254,23 @@ namespace TabloidMVC.Repositories
                         Id = reader.GetInt32(reader.GetOrdinal("UserTypeId")),
                         Name = reader.GetString(reader.GetOrdinal("UserTypeName"))
                     }
-                }
+                },
+                Comments = new List<Comment>()              
             };
+            try
+            {
+                Comment comment = new Comment();
+                comment.Id = reader.GetInt32(reader.GetOrdinal("CommentId"));
+                //if there are no comments, this will be null and will break
+                post.Comments.Add(comment);
+            }
+            catch (Exception x)
+            {
+                //if there are no comments, do nothing/do not read the commentId line or try to add to the list
+            }
+            
+
+            return post;
         }
     }
 }
