@@ -59,7 +59,7 @@ namespace TabloidMVC.Controllers
                 //comment.UserDisplayName = _userRepository.GetUserById(comment.UserProfileId).DisplayName;
                 _commentRepository.Add(comment);
 
-                return RedirectToAction("Index");
+                return RedirectToAction("Details", "Post", new { id=id });
             }
             catch
             {
