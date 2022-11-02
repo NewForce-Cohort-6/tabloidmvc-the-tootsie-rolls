@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using System.Linq;
 using TabloidMVC.Models;
 using TabloidMVC.Utils;
 
@@ -58,10 +59,10 @@ namespace TabloidMVC.Repositories
 
         public List<UserProfile> GetAll()
         {
-            using (SqlConnection conn = Connection)
+            using (var conn = Connection)
             {
                 conn.Open();
-                using (SqlCommand cmd = conn.CreateCommand())
+                using (var cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"
                        SELECT u.id, u.FirstName, u.LastName, u.DisplayName, u.Email,
@@ -70,33 +71,37 @@ namespace TabloidMVC.Repositories
                          FROM UserProfile u
                               LEFT JOIN UserType ut ON u.UserTypeId = ut.id";
 
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    List <UserProfile> userProfiles = new List<UserProfile>();
+                    var reader = cmd.ExecuteReader();
+
+                    List<UserProfile> userProfiles = new();
                     while (reader.Read())
                     {
-                        userProfiles.Add(new UserProfile()
+                        UserProfile userProfile = new()
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("id")),
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Email = reader.GetString(reader.GetOrdinal("Email")),
                             FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
                             LastName = reader.GetString(reader.GetOrdinal("LastName")),
                             DisplayName = reader.GetString(reader.GetOrdinal("DisplayName")),
-                            Email = reader.GetString(reader.GetOrdinal("Email")),
                             CreateDateTime = reader.GetDateTime(reader.GetOrdinal("CreateDateTime")),
-                            ImageLocation = reader.GetString(reader.GetOrdinal("ImageLocation")),
+                            ImageLocation = DbUtils.GetNullableString(reader, "ImageLocation"),
                             UserTypeId = reader.GetInt32(reader.GetOrdinal("UserTypeId")),
                             UserType = new UserType()
                             {
-                                Id = reader.GetInt32(reader.GetOrdinal("id")),
-                                Name = reader.GetString(reader.GetOrdinal("Name"))
-                            }
-                        });
-                        
+                                Id = reader.GetInt32(reader.GetOrdinal("UserTypeId")),
+                                Name = reader.GetString(reader.GetOrdinal("UserTypeName"))
+                            },
+                        };
+
+                        userProfiles.Add(userProfile);
                     }
 
                     reader.Close();
-                    return userProfiles;
+
+                    List<UserProfile> sortedList = userProfiles.OrderBy(x => x.DisplayName).ToList();
+                    return sortedList;
                 }
-            }    
+            }
         }
     }
 }
