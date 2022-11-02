@@ -53,7 +53,11 @@ namespace TabloidMVC.Repositories
                 }
             }
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public Post GetPublishedPostById(int id)
         {
             using (var conn = Connection)
@@ -106,7 +110,7 @@ namespace TabloidMVC.Repositories
                         {
                             //if there are no comments, do nothing/do not read the commentId line or try to add to the list
                         }
-                    }
+                    }                    
 
                     reader.Close();
 

@@ -26,15 +26,15 @@
 --VALUES (5, 2, 1, 'test5', 'comment 5', 10/29/2022);
 --SET IDENTITY_INSERT Comment OFF
 
-update comment
-set 
-	CreateDateTime = '2022-08-05 00:00:00.000'
-where id = 5;
+--update comment
+--set 
+--	CreateDateTime = '2022-08-05 00:00:00.000'
+--where id = 5;
 
-SET IDENTITY_INSERT Comment ON
-INSERT INTO Comment ([Id], PostId, UserProfileId, [Subject], Content, CreateDateTime)
-VALUES (6, 2, 1, 'test6', 'comment 6', Now());
-SET IDENTITY_INSERT Comment OFF
+--SET IDENTITY_INSERT Comment ON
+--INSERT INTO Comment ([Id], PostId, UserProfileId, [Subject], Content, CreateDateTime)
+--VALUES (6, 2, 1, 'test6', 'comment 6', Now());
+--SET IDENTITY_INSERT Comment OFF
 
-select * from comment;
+select * from post;
 
