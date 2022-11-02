@@ -29,7 +29,7 @@ namespace TabloidMVC.Models
         [DisplayName("Category")]
         public int CategoryId { get; set; }
         public Category Category { get; set; }
-
+        
         [DisplayName("Author")]
         public int UserProfileId { get; set; }
         public UserProfile UserProfile { get; set; }
