@@ -36,6 +36,29 @@ namespace TabloidMVC.Repositories
             }
         }
 
+        // Adding method to create a new category and add to database
+        public void AddCategory(Category category)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                                        INSERT INTO Category ([Name])
+                                        OUTPUT INSERTED.ID
+                                        VALUES (@name)";
+                    cmd.Parameters.AddWithValue("@name", category.Name);
+
+                    int id = (int)cmd.ExecuteScalar();
+
+                    category.Id = id;
+                }
+            }
+        }
+
+
+
         public Category GetCategoryById(int id)
         {
             using (SqlConnection conn = Connection)
@@ -83,6 +106,25 @@ namespace TabloidMVC.Repositories
                                       DELETE FROM Category
                                       WHERE Id = @id";
                     cmd.Parameters.AddWithValue("@id", id);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+        public void UpdateCategory(Category category)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                                       UPDATE Category
+                                       SET [Name] = @name
+                                       WHERE Id = @id";
+
+                    cmd.Parameters.AddWithValue("@name", category.Name);
+                    cmd.Parameters.AddWithValue("@id", category.Id);
 
                     cmd.ExecuteNonQuery();
                 }
