@@ -27,7 +27,12 @@ namespace TabloidMVC.Controllers
         // GET: TagController/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            Tag tag = _tagRepo.GetTagById(id);
+            if (tag == null)
+            {
+                return NotFound();
+            }
+            return View(tag);
         }
 
         // GET: TagController/Create
@@ -55,42 +60,51 @@ namespace TabloidMVC.Controllers
         // GET: TagController/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            Tag tag = _tagRepo.GetTagById(id);
+
+            if(tag == null)
+            {
+                return NotFound();
+            }
+            return View(tag);
         }
 
         // POST: TagController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Edit(int id, Tag tag)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                _tagRepo.UpdateTag(tag);
+                return RedirectToAction("Index");
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                return View(tag);
             }
         }
 
         // GET: TagController/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            Tag tag = _tagRepo.GetTagById(id);
+            return View(tag);
         }
 
         // POST: TagController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult Delete(int id,Tag tag)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                _tagRepo.DeleteTag(id);
+                return RedirectToAction("Index");
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                return View(tag);
             }
         }
     }
