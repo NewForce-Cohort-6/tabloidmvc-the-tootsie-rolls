@@ -31,13 +31,11 @@ namespace TabloidMVC.Repositories
                               u.FirstName, u.LastName, u.DisplayName, 
                               u.Email, u.CreateDateTime, u.ImageLocation AS AvatarImage,
                               u.UserTypeId, 
-                              ut.[Name] AS UserTypeName,
-                              co.Id as CommentId
+                              ut.[Name] AS UserTypeName
                          FROM Post p
                               LEFT JOIN Category c ON p.CategoryId = c.id
                               LEFT JOIN UserProfile u ON p.UserProfileId = u.id
                               LEFT JOIN UserType ut ON u.UserTypeId = ut.id
-                              LEFT JOIN Comment co on p.Id = co.PostId
                         WHERE IsApproved = 1 AND PublishDateTime < SYSDATETIME()";
                     var reader = cmd.ExecuteReader();
 
@@ -45,26 +43,7 @@ namespace TabloidMVC.Repositories
 
                     while (reader.Read())
                     {
-                        //if the line we're reading is NOT a post that has already bee created/added to the list                        
-                        if(!posts.Any(x => x.Id == reader.GetInt32(reader.GetOrdinal("Id"))))
-                        {
-                            posts.Add(NewPostFromReader(reader));
-                        } 
-                        else //if the post IS already in the list
-                        {   //set a post variable to the one that has more comments left to add
-                            Post foundPost = posts.Find(x => x.Id == reader.GetInt32(reader.GetOrdinal("Id")));
-                            try //adding another comment
-                            { 
-                                Comment comment = new Comment();
-                                comment.Id = reader.GetInt32(reader.GetOrdinal("CommentId"));
-                                //if there are no comments, this will be null and will break
-                                foundPost.Comments.Add(comment);
-                            }
-                            catch (Exception x)
-                            {
-                                //if there are no comments, do nothing/do not read the commentId line or try to add to the list
-                            }
-                        }
+                        posts.Add(NewPostFromReader(reader));
                     }
 
                     reader.Close();
@@ -105,28 +84,27 @@ namespace TabloidMVC.Repositories
 
                     Post post = null;
 
+                    //the post is going to be the same post each time through the loop (below)
+                    if (reader.Read())
+                    {
+                        post = NewPostFromReader(reader);
+                    }
+
+                    //there can be multiple lines now bc of multiple comments
                     while (reader.Read())
                     {
-                        ////if the line we're reading is NOT a post that has already bee created/added to the list                        
-                        //if (!posts.Any(x => x.Id == reader.GetInt32(reader.GetOrdinal("Id"))))
-                        //{
-                        post = NewPostFromReader(reader);
-                        //}
-                        //else //if the post IS already in the list
-                        //{   //set a post variable to the one that has more comments left to add
-                            //Post foundPost = posts.Find(x => x.Id == reader.GetInt32(reader.GetOrdinal("Id")));
-                            try //adding another comment
-                            {
-                                Comment comment = new Comment();
-                                comment.Id = reader.GetInt32(reader.GetOrdinal("CommentId"));
-                                //if there are no comments, this will be null and will break
-                                post.Comments.Add(comment);
-                            }
-                            catch (Exception x)
-                            {
-                                //if there are no comments, do nothing/do not read the commentId line or try to add to the list
-                            }
-                        //}
+                        
+                        try //adding another comment
+                        {
+                            Comment comment = new Comment();
+                            comment.Id = reader.GetInt32(reader.GetOrdinal("CommentId"));
+                            //if there are no comments, this will be null and will break
+                            post.Comments.Add(comment);
+                        }
+                        catch (Exception x)
+                        {
+                            //if there are no comments, do nothing/do not read the commentId line or try to add to the list
+                        }
                     }
 
                     reader.Close();
