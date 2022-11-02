@@ -43,6 +43,7 @@
             @Html.ActionLink("View Comments", "Index", "Comment", new {  id=Model.Id  });
         }
         | @Html.ActionLink("Back to Posts", "Index")
+        | @Html.ActionLink("Add Comment", "Create", "Comment", new {  id=Model.Id  })
         
     </div>
 </div>
