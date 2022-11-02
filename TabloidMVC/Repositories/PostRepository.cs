@@ -88,12 +88,12 @@ namespace TabloidMVC.Repositories
                     if (reader.Read())
                     {
                         post = NewPostFromReader(reader);
+                        //the first comment will be added in the NewPostFromReader method
                     }
 
                     //there can be multiple lines now bc of multiple comments
                     while (reader.Read())
                     {
-                        
                         try //adding another comment
                         {
                             Comment comment = new Comment();
