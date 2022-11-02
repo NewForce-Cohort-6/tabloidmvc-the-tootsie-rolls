@@ -95,7 +95,7 @@ namespace TabloidMVC.Controllers
         // POST: TagController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, Tag tag)
+        public ActionResult Delete(int id,Tag tag)
         {
             try
             {

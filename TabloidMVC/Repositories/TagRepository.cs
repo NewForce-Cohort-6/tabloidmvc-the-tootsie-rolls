@@ -136,6 +136,7 @@ VALUES (@Name)
                     cmd.CommandText = @"
                                                    Delete FROM Tag WHERE Id = @id";
                     cmd.Parameters.AddWithValue("@id", id);
+                    cmd.ExecuteNonQuery();
                 }
             }
         }
