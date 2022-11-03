@@ -10,7 +10,7 @@
 <h1>@Model.First().Post.Title</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    @Html.ActionLink("Create New", "Create", "Comment", new {  id=Model.First().PostId  })
 </p>
 <table class="table">
     <thead>
